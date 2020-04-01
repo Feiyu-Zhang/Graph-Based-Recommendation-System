@@ -13,15 +13,36 @@ for item in reader:
     kg.setdefault(item[0], []).append(item[1])
 
 csvFile.close()
-print("西游记人物关系", kg)
-
-# 用户选择一个节点,显示推荐列表，这里暂时选择猪八戒
-numPerson = len(kg)
-print("西游记中共有", numPerson, "个人物")
-idChoose = '猪八戒'
-print("当前用户选中 ", idChoose)
 
 
+def recommend(itemId):
+    # 用户选择一个节点,显示推荐列表，这里暂时选择猪八戒
+    topN = 2
+    if itemId in kg.keys():
+        itemNotRelated = kg[itemId]
+        itemRecommend = []
+        for item in itemNotRelated:
+            if item in kg.keys():
+                itemRecommend.extend(kg[item])
+        if len(itemRecommend):
+            occurence_count = Counter(itemRecommend).most_common(topN)
+            total = 0
+            for itemRec in occurence_count:
+                total = total + itemRec[1]
+            resultStr = ""
+            for itemRec in occurence_count:
+                resultStr = resultStr + itemRec[0] + str(itemRec[1] / total)
+            return resultStr
+        else:
+            return "亲，暂时没有相关推荐"
+    else:
+        return "亲，暂时没有相关推荐"
+        # print("当前用户选中 ", idChoose)
+
+
+result = recommend("hei")
+print(result)
+'''
 def get_keys(d, value):
     return [k for k, v in d.items() if value in v]
 
@@ -31,14 +52,14 @@ def basicRecList(relationDict, idChoose):
     # print(frontList)
     backList = get_keys(relationDict, idChoose)
     # print(backList)
-    recList = frontList+backList
+    recList = frontList + backList
     # print(recList)
     # result = Counter(recList)
     # print(result)
     # recListTopN = Counter(recList).most_common(top_n)
     return recList
-
-
+    
+    
 top_n = 3
 recList = basicRecList(kg, idChoose)
 recList = Counter(recList).most_common(top_n)
@@ -65,3 +86,4 @@ for item in history:
 
 result = Counter(recListWithHistory).most_common(top_n)
 print("滤除用户已选择历史后的推荐列表及权重", result)
+'''
