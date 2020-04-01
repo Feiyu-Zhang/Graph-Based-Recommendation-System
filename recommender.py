@@ -39,9 +39,9 @@ def recommend(itemId):
         return "亲，暂时没有相关推荐"
         # print("当前用户选中 ", idChoose)
 
-
-result = recommend("hei")
-print(result)
+# test locally
+# result = recommend("test")
+# print(result)
 '''
 def get_keys(d, value):
     return [k for k, v in d.items() if value in v]
