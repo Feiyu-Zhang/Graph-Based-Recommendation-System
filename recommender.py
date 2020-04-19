@@ -1,9 +1,42 @@
 import csv
-import random
+import pymysql
 from collections import Counter
 
+
+def connectMySQL():
+    return pymysql.connect(host="58.87.110.76", port=3306, user="root", password="WWWsql123", database="knowledge")
+
+
+def queryRelation(mysql, args):
+    conn = connectMySQL()
+    cur = conn.cursor()
+    try:
+        cur.execute(mysql, args)
+        results = cur.fetchall()
+        resultsList = [i[0] for i in results]
+        return resultsList
+        #  conn.commit()  # only for insert/alter/delete
+    except:
+        conn.rollback()
+    conn.close()
+
+
+def recommend(itemID):
+    knowledgeID = (itemID)
+    print(knowledgeID)
+    mysql = 'select kid2 from edu_knowledge_relation where kid1=(%s)'
+    recommendList = queryRelation(mysql, knowledgeID)
+    return recommendList
+
+
+# for debug
+# if __name__ == '__main__':
+#     result = recommend('猪八戒')
+#     print(result)
+
+# 下面的是读取本地csv数据，做算法流程验证
 # 读取知识图谱
-csvFile = open("data/The_Journey_to_the_West/triples.csv", encoding='utf-8')
+'''csvFile = open("data/The_Journey_to_the_West/triples.csv", encoding='utf-8')
 reader = csv.reader(csvFile)
 
 kg = {}
@@ -39,10 +72,11 @@ def recommend(itemId):
         return "亲，暂时没有相关推荐"
         # print("当前用户选中 ", idChoose)
 
+
 # test locally
 # result = recommend("test")
 # print(result)
-'''
+
 def get_keys(d, value):
     return [k for k, v in d.items() if value in v]
 
