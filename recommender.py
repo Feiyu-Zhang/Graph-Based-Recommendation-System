@@ -1,4 +1,3 @@
-import csv
 import pymysql
 from collections import Counter
 
@@ -21,18 +20,48 @@ def queryRelation(mysql, args):
     conn.close()
 
 
-def recommend(itemID):
-    knowledgeID = (itemID)
+def recommendBasedOnSearch(itemID):
+    knowledgeID = itemID
     print(knowledgeID)
-    mysql = 'select kid2 from edu_knowledge_relation where kid1=(%s)'
-    recommendList = queryRelation(mysql, knowledgeID)
-    return recommendList
+    mysql1 = 'select kid2 from edu_knowledge_relation where kid1=(%s)'
+    relatedItemList = queryRelation(mysql1, knowledgeID)
+    mysql2 = 'select kid1 from edu_knowledge_relation where kid2=(%s)'
+    relatedItemList.extend(queryRelation(mysql2, knowledgeID))
+    # Retrieval
+    recommendList = list()
+    for relatedItemId in relatedItemList:
+        mysql3 = 'select kid2 from edu_knowledge_relation where kid1=(%s)'
+        recommendList.extend(queryRelation(mysql3, relatedItemId))
+        mysql4 = 'select kid1 from edu_knowledge_relation where kid2=(%s)'
+        recommendList.extend(queryRelation(mysql4, relatedItemId))
+    # Rank
+    recommendList = [e for e in recommendList if e not in itemID]
+    recommendElements = Counter(recommendList).most_common(3)
+    return recommendElements
+
+
+def recommendBasedOnHistory(data):
+    recommendList = list()
+    # Retrieval
+    for relatedItemId in data['relatedKnowledge']:
+        mysql1 = 'select kid1 from edu_knowledge_relation where kid2=(%s)'
+        recommendList.extend(queryRelation(mysql1, relatedItemId))
+        mysql2 = 'select kid2 from edu_knowledge_relation where kid1=(%s)'
+        recommendList.extend(queryRelation(mysql2, relatedItemId))
+    # Rank
+    recommendList = [e for e in recommendList if e not in data['knowledge']]
+    recommendElements = Counter(recommendList).most_common(3)
+    return recommendElements
 
 
 # for debug
 # if __name__ == '__main__':
-#     result = recommend('猪八戒')
-#     print(result)
+    #     # 1
+    # result = recommendBasedOnSearch('猪八戒')
+    #     # 2
+    #     data = {'knowledge': ['孙悟空'], 'relatedKnowledge': ['牛魔王'], 'currentRelatedKnowledge': '牛魔王'}
+    #     result = recommendBasedOnHistory(data)
+    # print(result)
 
 # 下面的是读取本地csv数据，做算法流程验证
 # 读取知识图谱
